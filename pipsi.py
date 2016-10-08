@@ -209,8 +209,10 @@ class Repo(object):
 
         return rv
 
-    def install(self, package, python=None, editable=False, system_site_packages=False):
+    def install(self, package, python=None, editable=False,
+                system_site_packages=False, additional_packages=None):
         package, install_args = self.resolve_package(package, python)
+        install_args.extend(additional_packages or [])
 
         venv_path = self.get_package_path(package)
         if os.path.isdir(venv_path):
@@ -347,15 +349,21 @@ def cli(ctx, home, bin_dir):
 @click.option('--system-site-packages', is_flag=True,
               help='Give the virtual environment access to the global '
                    'site-packages.')
+@click.option('--additional-package', '-a', multiple=True,
+              help='Install additional packages. Can be specified '
+                   'multiple times. Additional packages will not be '
+                   'made available as commands')
 @click.pass_obj
-def install(repo, package, python, editable, system_site_packages):
+def install(repo, package, python, editable, system_site_packages,
+            additional_package):
     """Installs scripts from a Python package.
 
     Given a package this will install all the scripts and their dependencies
     of the given Python package into a new virtualenv and symlinks the
     discovered scripts into BIN_DIR (defaults to ~/.local/bin).
     """
-    if repo.install(package, python, editable, system_site_packages):
+    if repo.install(package, python, editable, system_site_packages,
+                    additional_package):
         click.echo('Done.')
     else:
         sys.exit(1)
