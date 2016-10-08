@@ -273,8 +273,9 @@ class Repo(object):
         paths.extend(self.find_installed_executables(path))
         return UninstallInfo(package, paths)
 
-    def upgrade(self, package, editable=False):
+    def upgrade(self, package, editable=False, additional_packages=None):
         package, install_args = self.resolve_package(package)
+        install_args.extend(additional_packages or [])
 
         venv_path = self.get_package_path(package)
         if not os.path.isdir(venv_path):
@@ -375,10 +376,14 @@ def install(repo, package, python, editable, system_site_packages,
 @click.option('--editable', '-e', is_flag=True,
               help='Enable editable installation.  This only works for '
                    'locally installed packages.')
+@click.option('--additional-package', '-a', multiple=True,
+              help='Update or install additional packages. Can be specified '
+                   'multiple times. Additional packages will not be '
+                   'made available as commands')
 @click.pass_obj
-def upgrade(repo, package, editable):
+def upgrade(repo, package, editable, additional_package):
     """Upgrades an already installed package."""
-    if repo.upgrade(package, editable):
+    if repo.upgrade(package, editable, additional_package):
         click.echo('Done.')
     else:
         sys.exit(1)
